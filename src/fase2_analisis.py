@@ -7,16 +7,6 @@ import matplotlib.pyplot as plt
 def cobweb_plot(rho, L, x0, n_max=80):
     """
     Genera y despliega el Diagrama de Telaraña para el modelo logístico discreto.
-    
-    Permite evaluar visualmente la estabilidad de los puntos fijos del sistema
-    y observar fenómenos de convergencia estable o la aparición de oscilaciones
-    inestables en función de los parámetros asignados.
-    
-    Parámetros:
-        rho (float): Tasa intrínseca de crecimiento poblacional.
-        L (float): Capacidad de carga del entorno.
-        x0 (float): Población o condición inicial en el tiempo t=0.
-        n_max (int): Número máximo de iteraciones temporales a simular.
     """
     f = lambda x: x + rho * x * (L - x)
     x_vals = np.linspace(0, L * 1.1, 1000)
@@ -50,18 +40,7 @@ def cobweb_plot(rho, L, x0, n_max=80):
 # ===================================================
 def calcular_tiempo_convergencia(rho, L, x0=5, tol=1e-2, max_iter=1000):
     """
-    Calcula de manera iterativa el tiempo (en número de pasos) que le toma 
-    al sistema biológico alcanzar el estado estacionario o capacidad de carga L.
-    
-    Parámetros:
-        rho (float): Tasa intrínseca de crecimiento.
-        L (float): Capacidad de carga o límite poblacional.
-        x0 (float): Población inicial.
-        tol (float): Tolerancia matemática para definir el criterio de parada.
-        max_iter (int): Límite superior de iteraciones para evitar bucles infinitos.
-        
-    Retorna:
-        int: Número de iteraciones requerido para converger bajo la tolerancia dada.
+    Calcula el tiempo iterativo para alcanzar el estado estacionario L.
     """
     f = lambda x: x + rho * x * (L - x)
     x = x0
@@ -76,9 +55,7 @@ def calcular_tiempo_convergencia(rho, L, x0=5, tol=1e-2, max_iter=1000):
 
 def generar_mapa_calor_sensibilidad():
     """
-    Construye y visualiza una matriz bidimensional (mapa de calor) para analizar
-    la sensibilidad del tiempo de convergencia frente a cambios simultáneos
-    en la tasa de crecimiento (rho) y la capacidad de carga (L).
+    Visualiza la matriz bidimensional para analizar la sensibilidad de rho y L.
     """
     rho_vals = np.linspace(0.005, 0.025, 50)
     L_vals = np.linspace(50, 150, 50)
@@ -104,29 +81,13 @@ def generar_mapa_calor_sensibilidad():
 # =========================================
 def solucion_analitica(t, r, L, X0):
     """
-    Evalúa la solución analítica exacta de la ecuación diferencial logística continua.
-    
-    Parámetros:
-        t (ndarray): Vector de tiempo.
-        r (float): Coeficiente de crecimiento continuo.
-        L (float): Capacidad de carga del ecosistema.
-        X0 (float): Población inicial continua.
+    Evalúa la solución analítica exacta de la ecuación diferencial logística.
     """
     return (L * X0) / (X0 + (L - X0) * np.exp(-r * t))
 
 def euler_integracion(r, L, X0, h, t_max=25):
     """
-    Aproxima la solución de la ecuación diferencial mediante el método numérico de Euler.
-    
-    Permite estudiar de forma cuantitativa cómo se propaga el error global 
-    en función del tamaño de paso h seleccionado.
-    
-    Parámetros:
-        r (float): Coeficiente de crecimiento.
-        L (float): Capacidad de carga.
-        X0 (float): Población inicial.
-        h (float): Tamaño de paso temporal (step-size).
-        t_max (float): Tiempo máximo de la simulación.
+    Aproxima la solución de la ecuación diferencial mediante el método de Euler.
     """
     n_pasos = int(t_max / h)
     t_vals = np.linspace(0, t_max, n_pasos + 1)
@@ -138,8 +99,7 @@ def euler_integracion(r, L, X0, h, t_max=25):
 
 def graficar_error_euler():
     """
-    Genera la gráfica comparativa institucional entre la curva exacta (solución analítica)
-    y los múltiples perfiles numéricos derivados del método de Euler para h arbitrarios.
+    Genera la gráfica comparativa entre la curva exacta y los perfiles de Euler.
     """
     r, L, X0 = 0.1, 1000, 100
     t_max = 25
@@ -160,3 +120,37 @@ def graficar_error_euler():
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.show()
+
+
+# ==========================================
+# ÍTEM 4: CÁLCULO DEL ERROR CUADRÁTICO MEDIO
+# ==========================================
+def calcular_error_cuadratico_medio():
+    """
+    Calcula el Error Cuadrático Medio (ECM) para los distintos tamaños de paso h.
+    """
+    r, L, X0 = 0.1, 1000, 100
+    t_max = 25
+    pasos_h = [1.0, 0.5, 0.25, 0.1]
+    
+    print("\n=== CÁLCULO DEL ERROR CUADRÁTICO MEDIO (ECM) ===")
+    
+    for h in pasos_h:
+        t_e, X_e = euler_integracion(r, L, X0, h, t_max)
+        X_real = solucion_analitica(t_e, r, L, X0)
+        ecm = np.mean((X_real - X_e) ** 2)
+        print(f"Para un paso h = {h:<4} -> ECM = {ecm:.6f}")
+
+
+# =====================================================================
+# EJECUCIÓN AUTOMÁTICA DE LOS NUEVOS GRÁFICOS Y ANÁLISIS
+# =====================================================================
+if __name__ == "__main__":
+    print("Generando Mapa de Calor (Análisis de Sensibilidad)...")
+    generar_mapa_calor_sensibilidad()
+    
+    print("Generando Curvas de Comparación de Error de Euler...")
+    graficar_error_euler()
+    
+    # Aquí llamamos al cálculo numérico final de forma limpia
+    calcular_error_cuadratico_medio()
