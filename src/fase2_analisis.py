@@ -67,3 +67,7 @@ def euler_integracion(r, L, X0, h, t_max=25):
     for n in range(n_pasos):
         X_vals[n+1] = X_vals[n] + h * (r * X_vals[n] * (1 - X_vals[n] / L))
     return t_vals, X_vals
+
+# Esto activará los gráficos de telaraña que programaron
+cobweb_plot(rho=0.01, L=100, x0=10)   # Caso A: Estable
+cobweb_plot(rho=0.026, L=100, x0=10)  # Caso B: Inestable
