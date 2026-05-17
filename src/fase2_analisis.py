@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 # ÍTEM 1: DIAGRAMA DE TELARAÑA (COBWEB PLOT)
 # ==========================================
 def cobweb_plot(rho, L, x0, n_max=80):
-    # Modelo discreto del enunciado: X_{n+1} = X_n + rho * X_n * (L - X_n)
+    """
+    Genera y despliega el Diagrama de Telaraña para el modelo logístico discreto.
+    """
     f = lambda x: x + rho * x * (L - x)
     x_vals = np.linspace(0, L * 1.1, 1000)
     y_vals = f(x_vals)
@@ -20,7 +22,8 @@ def cobweb_plot(rho, L, x0, n_max=80):
         plt.plot([x_curr, x_curr], [x_curr, y_next], 'r', alpha=0.5, lw=1)
         plt.plot([x_curr, y_next], [y_next, y_next], 'r', alpha=0.5, lw=1)
         x_curr = y_next
-        if abs(x_curr) > 1e4: break
+        if abs(x_curr) > 1e4: 
+            break
             
     plt.title(f'Diagrama de Telaraña - r={rho}, L={L}')
     plt.xlabel('$X_n$')
@@ -28,20 +31,17 @@ def cobweb_plot(rho, L, x0, n_max=80):
     plt.xlim(0, L * 1.1)
     plt.ylim(0, L * 1.1)
     plt.legend()
+    plt.grid(True, alpha=0.3)
     plt.show()
 
-# --- CASOS SOLICITADOS EN EL ENUNCIADO ---
-# Caso A: rho pequeño -> Muestra convergencia estable hacia la capacidad L
-# cobweb_plot(rho=0.01, L=100, x0=10) 
-
-# Caso B: rho grande -> El sistema se vuelve inestable y genera oscilaciones
-# cobweb_plot(rho=0.026, L=100, x0=10)
-
 
 # ===================================================
-# ÍTEM 2: ANÁLISIS DE SENSIBILIDAD Y TIEMPO CONVERGENCIA
+# ÍTEM 2: ANÁLISIS DE SENSIBILIDAD PARAMÉTRICA
 # ===================================================
 def calcular_tiempo_convergencia(rho, L, x0=5, tol=1e-2, max_iter=1000):
+    """
+    Calcula el tiempo iterativo para alcanzar el estado estacionario L.
+    """
     f = lambda x: x + rho * x * (L - x)
     x = x0
     for t in range(max_iter):
@@ -49,17 +49,46 @@ def calcular_tiempo_convergencia(rho, L, x0=5, tol=1e-2, max_iter=1000):
         if abs(x_next - x) < tol and abs(x_next - L) < tol * 10:
             return t
         x = x_next
-        if x <= 0 or np.isnan(x): return max_iter
+        if x <= 0 or np.isnan(x): 
+            return max_iter
     return max_iter
+
+def generar_mapa_calor_sensibilidad():
+    """
+    Visualiza la matriz bidimensional para analizar la sensibilidad de rho y L.
+    """
+    rho_vals = np.linspace(0.005, 0.025, 50)
+    L_vals = np.linspace(50, 150, 50)
+    T_matrix = np.zeros((len(rho_vals), len(L_vals)))
+    
+    for i, rho in enumerate(rho_vals):
+        for j, L in enumerate(L_vals):
+            T_matrix[i, j] = calcular_tiempo_convergencia(rho, L, x0=10)
+            
+    plt.figure(figsize=(8, 6))
+    plt.imshow(T_matrix, extent=[L_vals[0], L_vals[-1], rho_vals[0], rho_vals[-1]], 
+               origin='lower', aspect='auto', cmap='viridis')
+    plt.colorbar(label='Tiempo de convergencia (iteraciones $t$)')
+    plt.title('Análisis de Sensibilidad: Tiempo de Convergencia según $\\rho$ y $L$')
+    plt.xlabel('Capacidad de carga ($L$)')
+    plt.ylabel('Tasa de crecimiento ($\\rho$)')
+    plt.grid(False)
+    plt.show()
 
 
 # =========================================
 # ÍTEM 3: ESTUDIO DEL ERROR GLOBAL DE EULER
 # =========================================
 def solucion_analitica(t, r, L, X0):
+    """
+    Evalúa la solución analítica exacta de la ecuación diferencial logística.
+    """
     return (L * X0) / (X0 + (L - X0) * np.exp(-r * t))
 
 def euler_integracion(r, L, X0, h, t_max=25):
+    """
+    Aproxima la solución de la ecuación diferencial mediante el método de Euler.
+    """
     n_pasos = int(t_max / h)
     t_vals = np.linspace(0, t_max, n_pasos + 1)
     X_vals = np.zeros(n_pasos + 1)
