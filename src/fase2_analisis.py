@@ -100,3 +100,44 @@ def euler_integracion(r, L, X0, h, t_max=25):
 # Esto activará los gráficos de telaraña que programaron
 cobweb_plot(rho=0.01, L=100, x0=10)   # Caso A: Estable
 cobweb_plot(rho=0.026, L=100, x0=10)  # Caso B: Inestable
+
+# ===================================================
+# EJECUTAR ÍTEM 2: TIEMPOS DE CONVERGENCIA (TABLA)
+# ===================================================
+print("--- TIEMPOS DE CONVERGENCIA ---")
+for r in [0.005, 0.01, 0.015]:
+    t = calcular_tiempo_convergencia(rho=r, L=100, x0=5)
+    print(f"Para rho = {r}, el tiempo de convergencia es: {t} pasos.")
+
+print("\n" + "="*40 + "\n")
+
+# ===================================================
+# EJECUTAR ÍTEM 3: GRÁFICO DE ERROR DE EULER
+# ===================================================
+print("--- GENERANDO GRÁFICO DE EULER ---")
+
+# Parámetros de prueba
+r_prueba = 0.1
+L_prueba = 100
+X0_prueba = 10
+t_max_prueba = 25
+
+plt.figure(figsize=(8, 5))
+
+# 1. Solución analítica (continua) como referencia
+t_exacto = np.linspace(0, t_max_prueba, 200)
+X_exacto = solucion_analitica(t_exacto, r_prueba, L_prueba, X0_prueba)
+plt.plot(t_exacto, X_exacto, 'k-', label='Solución Exacta', linewidth=2)
+
+# 2. Probar Euler con diferentes pasos (h) para ver el error
+pasos_h = [2.0, 0.5, 0.1]
+for h in pasos_h:
+    t_euler, X_euler = euler_integracion(r_prueba, L_prueba, X0_prueba, h, t_max_prueba)
+    plt.plot(t_euler, X_euler, '--o', label=f'Euler (h = {h})', alpha=0.7)
+
+plt.title('Comparación: Método de Euler vs Solución Exacta')
+plt.xlabel('Tiempo (t)')
+plt.ylabel('Población (X)')
+plt.legend()
+plt.grid(True)
+plt.show()
